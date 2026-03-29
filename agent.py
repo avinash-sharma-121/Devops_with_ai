@@ -3,7 +3,7 @@ from strands_tools import calculator, http_request
 from strands.models.ollama import OllamaModel
 
 # add tools
-from tools import about_me, run_shell, get_time, disk_usage, kubectl_get_pods,get_weather,reandom_number
+from tools import about_me, run_shell, get_time, disk_usage, kubectl_get_pods,get_weather,random_number
 
 from tools_pdf import read_pdf,generate_pdf
 
@@ -31,7 +31,7 @@ system_prompt = "You are a helpful assistant."\
 
 agent= Agent(
     model=ollama_model,
-    tools=[calculator, http_request,about_me,read_pdf, generate_pdf, reandom_number, run_shell,get_time,disk_usage,kubectl_get_pods,get_weather],
+    tools=[calculator, http_request,about_me,read_pdf, generate_pdf, random_number, run_shell,get_time,disk_usage,kubectl_get_pods,get_weather],
     system_prompt=system_prompt
     )
 
