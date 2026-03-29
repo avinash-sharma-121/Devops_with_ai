@@ -18,8 +18,6 @@ def read_pdf(file_path: str) -> str:
         return f"Error reading PDF: {str(e)}"
     
 
-
-@tool
 @tool
 def generate_pdf(topic: str, output_file: str = "output.pdf") -> str:
     """Generate a PDF report based on a topic"""

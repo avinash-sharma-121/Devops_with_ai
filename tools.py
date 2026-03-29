@@ -26,7 +26,6 @@ def kubectl_get_pods() -> str:
     return subprocess.getoutput("kubectl get pods -n kube-system")
 
 @tool
-
 def get_weather(city: str) -> str:
     """Get current weather for a city using wttr.in"""
     import requests
@@ -38,9 +37,9 @@ def get_weather(city: str) -> str:
             return f"Error fetching weather: {response.status_code}"
     except Exception as e:
         return str(e)
-    
+
 @tool
-def reandom_number() -> str:
+def random_number() -> str:
     """Generate a random number between 1 and 100"""
     import random
     return str(random.randint(1, 100))
@@ -70,3 +69,4 @@ def generate_pdf(content: str) -> str:
 def about_me() -> str:
     """Return information about the agent"""
     return "I am a helpful assistant built using Strands framework. I can perform various tasks using the tools provided to me."
+
