@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps AI Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+            --border: #e5e7eb;
+            --text: #374151;
+            --text-light: #6b7280;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            max-width: 1600px;
+            margin: 0 auto;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        /* ======================== */
+        /* Sidebar */
+        /* ======================== */
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .sidebar-header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10b981;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.offline {
+            background: #ef4444;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .tools-section {
+            margin-bottom: 20px;
+        }
+
+        .tools-section h3 {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-light);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tool-item {
+            padding: 8px;
+            margin-bottom: 4px;
+            background: var(--light);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tool-item:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            background: var(--light);
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* ======================== */
+        /* Main Chat Area */
+        /* ======================== */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h2 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 16px;
+        }
+
+        .header-icon {
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .header-icon:hover {
+            opacity: 1;
+        }
+
+        /* ======================== */
+        /* Chat Messages Area */
+        /* ======================== */
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: linear-gradient(180deg, white 0%, #fafafa 100%);
+        }
+
+        .chat-area::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-area::-webkit-scrollbar-track {
+            background: var(--light);
+        }
+
+        .chat-area::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .chat-area::-webkit-scrollbar-thumb:hover {
+            background: var(--text-light);
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .message-avatar.user {
+            background: var(--primary);
+            color: white;
+        }
+
+        .message-avatar.assistant {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-bubble {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-bubble {
+            background: var(--light);
+            color: var(--text);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .message.system .message-bubble {
+            background: var(--warning);
+            background-opacity: 0.1;
+            color: var(--text);
+            border: 1px solid var(--warning);
+            max-width: 100%;
+        }
+
+        .loading {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            padding: 12px 16px;
+        }
+
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: bounce 1.4s infinite;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* ======================== */
+        /* Input Area */
+        /* ======================== */
+        .input-area {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border);
+            background: white;
+        }
+
+        .input-form {
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-field {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        textarea {
+            flex: 1;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            max-height: 120px;
+            transition: all 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            background: linear-gradient(135deg, #f0f9ff 0%, #f0fdf4 100%);
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.6;
+        }
+
+        .clear-btn {
+            background: var(--danger);
+            padding: 12px 16px;
+        }
+
+        .clear-btn:hover {
+            background: #dc2626;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        /* ======================== */
+        /* Responsive */
+        /* ======================== */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: 200px;
+            }
+
+            .sidebar-content {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 12px;
+            }
+
+            .tools-section {
+                margin-bottom: 0;
+            }
+
+            .message-bubble {
+                max-width: 90%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+                gap: 10px;
+            }
+
+            .chat-area {
+                padding: 16px;
+            }
+
+            .input-area {
+                padding: 12px 16px;
+            }
+
+            .message-bubble {
+                max-width: 100%;
+            }
+
+            .header-icons {
+                display: none;
+            }
+        }
+
+        /* ======================== */
+        /* Code Blocks */
+        /* ======================== */
+        code {
+            background: var(--dark);
+            color: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+        }
+
+        pre {
+            background: var(--dark);
+            color: #e5e7eb;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 8px 0;
+            border-left: 3px solid var(--primary);
+        }
+
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+
+        /* ======================== */
+        /* Empty State */
+        /* ======================== */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-light);
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>🛠️ DevOps AI Agent</h1>
+                <p><span class="status-indicator" id="status-indicator"></span> <span id="status-text">Initializing...</span></p>
+            </div>
+            <div class="sidebar-content" id="tools-container">
+                <div style="text-align: center; padding: 20px; color: var(--text-light);">
+                    Loading tools...
+                </div>
+            </div>
+            <div class="sidebar-footer">
+                Available tools: <strong id="tools-count">0</strong>
+            </div>
+        </div>
+
+        <!-- Main Area -->
+        <div class="main">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-title">
+                    <span>💬</span>
+                    <h2>Chat Assistant</h2>
+                </div>
+                <div class="header-icons">
+                    <span class="header-icon" title="Settings">⚙️</span>
+                    <span class="header-icon" title="Help">❓</span>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="chat-area" id="chat-container">
+                <div class="empty-state">
+                    <div class="empty-state-icon">💬</div>
+                    <h3>Welcome to DevOps AI Agent</h3>
+                    <p>Start by asking a question about your Kubernetes cluster, tools, or DevOps tasks.</p>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-form">
+                    <div class="input-field">
+                        <textarea 
+                            id="message-input" 
+                            placeholder="Ask me anything about Kubernetes, deployments, pods, or calculations..."
+                            rows="1"
+                            style="min-height: 44px;"
+                        ></textarea>
+                    </div>
+                    <button id="send-btn" onclick="sendMessage()" title="Send message (Ctrl+Enter)">
+                        <span>➤</span>
+                    </button>
+                    <button class="clear-btn" onclick="clearChat()" title="Clear chat">
+                        <span>🗑️</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================
+        // State
+        // ========================
+        const state = {
+            isLoading: false,
+            messages: [],
+            conversationHistory: []
+        };
+
+        const elements = {
+            chatContainer: document.getElementById('chat-container'),
+            messageInput: document.getElementById('message-input'),
+            sendBtn: document.getElementById('send-btn'),
+            toolsContainer: document.getElementById('tools-container'),
+            toolsCount: document.getElementById('tools-count'),
+            statusIndicator: document.getElementById('status-indicator'),
+            statusText: document.getElementById('status-text')
+        };
+
+        // ========================
+        // Event Listeners
+        // ========================
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAgentStatus();
+            loadTools();
+            
+            // Auto-resize textarea
+            elements.messageInput.addEventListener('input', autoResizeTextarea);
+            
+            // Send on Ctrl+Enter
+            elements.messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    sendMessage();
+                }
+            });
+        });
+
+        // ========================
+        // API Calls
+        // ========================
+        async function checkAgentStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                if (data.status === 'ready') {
+                    elements.statusIndicator.classList.remove('offline');
+                    elements.statusText.textContent = 'Ready';
+                } else {
+                    elements.statusIndicator.classList.add('offline');
+                    elements.statusText.textContent = 'Initializing...';
+                }
+            } catch (error) {
+                console.error('Status check error:', error);
+                elements.statusIndicator.classList.add('offline');
+                elements.statusText.textContent = 'Offline';
+            }
+        }
+
+        async function loadTools() {
+            try {
+                const response = await fetch('/api/tools');
+                const data = await response.json();
+                
+                elements.toolsCount.textContent = data.total_tools;
+                
+                // Group tools by category
+                const categories = {
+                    'Kubernetes': [],
+                    'Custom': [],
+                    'System': []
+                };
+                
+                data.tools.forEach(tool => {
+                    if (tool.name.includes('pod') || tool.name.includes('deployment') || 
+                        tool.name.includes('service') || tool.name.includes('namespace') ||
+                        tool.name.includes('cluster') || tool.name.includes('node') ||
+                        tool.name.includes('resource')) {
+                        categories['Kubernetes'].push(tool);
+                    } else if (tool.name.includes('add') || tool.name.includes('forecast') || 
+                               tool.name.includes('alert')) {
+                        categories['Custom'].push(tool);
+                    } else {
+                        categories['System'].push(tool);
+                    }
+                });
+                
+                let html = '';
+                for (const [category, tools] of Object.entries(categories)) {
+                    if (tools.length === 0) continue;
+                    html += `<div class="tools-section">
+                        <h3>${category}</h3>`;
+                    tools.forEach(tool => {
+                        html += `<div class="tool-item" title="${tool.description}">
+                            ${tool.name}
+                        </div>`;
+                    });
+                    html += `</div>`;
+                }
+                
+                elements.toolsContainer.innerHTML = html;
+            } catch (error) {
+                console.error('Failed to load tools:', error);
+                elements.toolsContainer.innerHTML = '<div style="color: red; padding: 20px;">Failed to load tools</div>';
+            }
+        }
+
+        async function sendMessage() {
+            const message = elements.messageInput.value.trim();
+            if (!message || state.isLoading) return;
+            
+            // Add user message to UI
+            addMessageToUI('user', message);
+            elements.messageInput.value = '';
+            autoResizeTextarea();
+            
+            state.isLoading = true;
+            elements.sendBtn.disabled = true;
+            
+            // Show loading indicator
+            addLoadingIndicator();
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        conversation_history: state.conversationHistory
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Remove loading indicator
+                removeLoadingIndicator();
+                
+                // Ensure response is a string
+                const assistantResponse = typeof data.response === 'string' 
+                    ? data.response 
+                    : JSON.stringify(data.response);
+                
+                // Add assistant response
+                addMessageToUI('assistant', assistantResponse);
+                
+                // Store in history
+                state.conversationHistory.push({
+                    user: message,
+                    assistant: assistantResponse
+                });
+                
+            } catch (error) {
+                console.error('Error:', error);
+                removeLoadingIndicator();
+                addMessageToUI('system', `Error: ${error.message}`);
+            } finally {
+                state.isLoading = false;
+                elements.sendBtn.disabled = false;
+                elements.messageInput.focus();
+            }
+        }
+
+        // ========================
+        // UI Helpers
+        // ========================
+        function addMessageToUI(type, content) {
+            // Remove empty state
+            const emptyState = elements.chatContainer.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            // Ensure content is a string
+            const contentStr = typeof content === 'string' ? content : String(content);
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const avatarEmoji = type === 'user' ? '👤' : type === 'assistant' ? '🤖' : '⚠️';
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar ${type}">${avatarEmoji}</div>
+                <div class="message-bubble">${escapeHtml(contentStr)}</div>
+            `;
+            
+            elements.chatContainer.appendChild(messageDiv);
+            
+            // Auto-scroll to bottom
+            setTimeout(() => {
+                elements.chatContainer.scrollTop = elements.chatContainer.scrollHeight;
+            }, 0);
+        }
+
+        function addLoadingIndicator() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message assistant';
+            loadingDiv.id = 'loading-indicator';
+            loadingDiv.innerHTML = `
+                <div class="message-avatar assistant">🤖</div>
+                <div class="loading">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            `;
+            
+            elements.chatContainer.appendChild(loadingDiv);
+            elements.chatContainer.scrollTop = elements.chatContainer.scrollHeight;
+        }
+
+        function removeLoadingIndicator() {
+            const loading = document.getElementById('loading-indicator');
+            if (loading) {
+                loading.remove();
+            }
+        }
+
+        function autoResizeTextarea() {
+            const textarea = elements.messageInput;
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        function clearChat() {
+            if (confirm('Clear all messages?')) {
+                elements.chatContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💬</div>
+                        <h3>Welcome to DevOps AI Agent</h3>
+                        <p>Start by asking a question about your Kubernetes cluster, tools, or DevOps tasks.</p>
+                    </div>
+                `;
+                state.messages = [];
+                state.conversationHistory = [];
+                elements.messageInput.focus();
+            }
+        }
+
+        function escapeHtml(text) {
+            // Convert to string if not already
+            if (typeof text !== 'string') {
+                if (text === null || text === undefined) {
+                    return '';
+                }
+                text = JSON.stringify(text);
+            }
+            
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Refresh status every 5 seconds
+        setInterval(checkAgentStatus, 3000);
+    </script>
+</body>
+</html>
