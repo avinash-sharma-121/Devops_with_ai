@@ -41,29 +41,35 @@ system_prompt = "You are a helpful assistant."\
 
 try:
     print("🔗 Connecting to MCP Server at", MCP_SERVER_URL)
-    with streamable_http_mcp_client:
-        print("✓ Connected to MCP Server")
-        tools = streamable_http_mcp_client.list_tools_sync()
-        print(f"✓ Retrieved {len(tools)} tools from MCP Server")
-        
-        agent = Agent(model=ollama_model,
-                      tools=tools,
-                      system_prompt=system_prompt)
-        print(f"✓ Agent initialized")
-        print("\n📊 Available tools from MCP Server:")
-        for i, tool_item in enumerate(tools, 1):
-            # MCPAgentTool has tool_name attribute
-            tool_name = getattr(tool_item, 'tool_name', f'Tool {i}')
-            print(f"   {i}. {tool_name}")
-        
-        print(f"\n{'='*60}")
-        user_input = input("What do you want to ask the agent? ")
-        if user_input.strip():
-            print(f"\n🤖 Processing: {user_input}\n")
-            agent(user_input)
-        else:
-            print("No input provided. Exiting.")
-            
+    try:
+
+        with streamable_http_mcp_client:
+            print("✓ Connected to MCP Server")
+            tools = streamable_http_mcp_client.list_tools_sync()
+            print(f"✓ Retrieved {len(tools)} tools from MCP Server")
+
+            agent = Agent(model=ollama_model,
+                          tools=tools,
+                          system_prompt=system_prompt)
+            print(f"✓ Agent initialized")
+            print("\n📊 Available tools from MCP Server:")
+            for i, tool_item in enumerate(tools, 1):
+                # MCPAgentTool has tool_name attribute
+                tool_name = getattr(tool_item, 'tool_name', f'Tool {i}')
+                print(f"   {i}. {tool_name}")
+
+            print(f"\n{'='*60}")
+            user_input = input("What do you want to ask the agent? ")
+            if user_input.strip():
+                print(f"\n🤖 Processing: {user_input}\n")
+                agent(user_input)
+            else:
+                print("No input provided. Exiting.")
+
+    except Exception as e:
+        print(f"\n❌ Error during MCP Server connection or tool retrieval: {e}")
+        print("\n📌 Please ensure the MCP server is running and accessible at http://localhost:8000/sse")
+    
 except Exception as e:
     print(f"\n❌ Error: {e}")
     print("\n📌 MCP Server Connection Failed")
