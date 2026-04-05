@@ -1,16 +1,26 @@
 from strands import Agent, tool
 from strands_tools import calculator, http_request
 from strands.models.ollama import OllamaModel
+from mcp.client.sse import sse_client
+from strands.tools.mcp import MCPClient
 
 # add tools
 from tools import about_me, run_shell, get_time, disk_usage, kubectl_get_pods,get_weather,random_number
 
 from tools_pdf import read_pdf,generate_pdf
 
-#define loacl model
+#define local model
 ollama_model = OllamaModel(
     host="http://localhost:11434",
     model_id="qwen2.5:1.5b"
+)
+
+# MCP Server configuration - FastMCP SSE endpoint
+MCP_SERVER_URL = "http://localhost:8000/sse"
+
+# Create MCP client with SSE transport for FastMCP
+streamable_http_mcp_client = MCPClient(
+    lambda: sse_client(MCP_SERVER_URL)
 )
 
 system_prompt = "You are a helpful assistant."\
@@ -29,19 +39,37 @@ system_prompt = "You are a helpful assistant."\
             "if the user is asking for a http request, you can use the http_request tool to get the correct answer."\
             "if the user is asking for a pdf related question, you can use the read_pdf and generate_pdf tools to get the correct answer."
 
-agent= Agent(
-    model=ollama_model,
-    tools=[calculator, http_request,about_me,read_pdf, generate_pdf, random_number, run_shell,get_time,disk_usage,kubectl_get_pods,get_weather],
-    system_prompt=system_prompt
-    )
-
-# By default, it run Amazon Bedrock, but you can specify any other model by passing the model name as an argument to the Agent constructor.
-# For example, to use Anthropic Claude 2, you can do:
-# agent = Agent(model="anthropic.claude-2")
-
-
-
-
-user_input=input("What do you want to ask the agent? ")
-
-agent(user_input)
+try:
+    print("🔗 Connecting to MCP Server at", MCP_SERVER_URL)
+    with streamable_http_mcp_client:
+        print("✓ Connected to MCP Server")
+        tools = streamable_http_mcp_client.list_tools_sync()
+        print(f"✓ Retrieved {len(tools)} tools from MCP Server")
+        
+        agent = Agent(model=ollama_model,
+                      tools=tools,
+                      system_prompt=system_prompt)
+        print(f"✓ Agent initialized")
+        print("\n📊 Available tools from MCP Server:")
+        for i, tool_item in enumerate(tools, 1):
+            tool_name = getattr(tool_item, 'name', f'tool_{i}')
+            if hasattr(tool_item, '__dict__'):
+                print(f"   {i}. {tool_name}")
+            else:
+                print(f"   {i}. {str(tool_item)[:50]}")
+        
+        print(f"\n{'='*60}")
+        user_input = input("What do you want to ask the agent? ")
+        if user_input.strip():
+            print(f"\n🤖 Processing: {user_input}\n")
+            agent(user_input)
+        else:
+            print("No input provided. Exiting.")
+            
+except Exception as e:
+    print(f"\n❌ Error: {e}")
+    print("\n📌 MCP Server Connection Failed")
+    print(f"   Trying to connect to: {MCP_SERVER_URL}")
+    print("\n   Make sure the MCP server is running at http://127.0.0.1:8000/sse")
+    import traceback
+    traceback.print_exc()
