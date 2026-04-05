@@ -567,7 +567,7 @@
                             style="min-height: 44px;"
                         ></textarea>
                     </div>
-                    <button id="send-btn" onclick="sendMessage()" title="Send message (Ctrl+Enter)">
+                    <button id="send-btn" onclick="sendMessage()" title="Send message (Press Enter)">
                         <span>➤</span>
                     </button>
                     <button class="clear-btn" onclick="clearChat()" title="Clear chat">
@@ -608,10 +608,17 @@
             // Auto-resize textarea
             elements.messageInput.addEventListener('input', autoResizeTextarea);
             
-            // Send on Ctrl+Enter
+            // Send on Enter (or Ctrl+Enter), new line on Shift+Enter
             elements.messageInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && e.ctrlKey) {
-                    sendMessage();
+                if (e.key === 'Enter') {
+                    if (e.shiftKey) {
+                        // Allow Shift+Enter for new line (default behavior)
+                        return;
+                    } else {
+                        // Send on Enter or Ctrl+Enter
+                        e.preventDefault();
+                        sendMessage();
+                    }
                 }
             });
         });

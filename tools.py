@@ -67,6 +67,6 @@ def generate_pdf(content: str) -> str:
 
 @tool
 def about_me() -> str:
-    """Return information about the agent"""
+    """Return information about the developer and the agent"""
     return "I am a helpful assistant built using Strands framework. I can perform various tasks using the tools provided to me."
 

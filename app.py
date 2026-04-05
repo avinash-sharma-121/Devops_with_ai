@@ -111,8 +111,7 @@ def initialize_agent():
     
     # Add system tools
     local_tools_list = [
-        about_me, run_shell, get_time, disk_usage, kubectl_get_pods, 
-        get_weather, random_number, read_pdf, generate_pdf
+        about_me, run_shell, get_time, disk_usage, kubectl_get_pods, random_number, read_pdf, generate_pdf
     ]
     all_tools.extend(local_tools_list)
     
