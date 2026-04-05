@@ -52,11 +52,9 @@ try:
         print(f"✓ Agent initialized")
         print("\n📊 Available tools from MCP Server:")
         for i, tool_item in enumerate(tools, 1):
-            tool_name = getattr(tool_item, 'name', f'tool_{i}')
-            if hasattr(tool_item, '__dict__'):
-                print(f"   {i}. {tool_name}")
-            else:
-                print(f"   {i}. {str(tool_item)[:50]}")
+            # MCPAgentTool has tool_name attribute
+            tool_name = getattr(tool_item, 'tool_name', f'Tool {i}')
+            print(f"   {i}. {tool_name}")
         
         print(f"\n{'='*60}")
         user_input = input("What do you want to ask the agent? ")
