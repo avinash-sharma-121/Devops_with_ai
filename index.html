@@ -769,16 +769,22 @@
             
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
-            
+
             const avatarEmoji = type === 'user' ? '👤' : type === 'assistant' ? '🤖' : '⚠️';
-            
+
+            // For assistant, replace \n with <br> for better formatting
+            const formattedContent =
+                type === 'assistant'
+                    ? escapeHtml(contentStr).replace(/\n/g, '<br>')
+                    : escapeHtml(contentStr);
+
             messageDiv.innerHTML = `
                 <div class="message-avatar ${type}">${avatarEmoji}</div>
-                <div class="message-bubble">${escapeHtml(contentStr)}</div>
+                <div class="message-bubble">${formattedContent}</div>
             `;
-            
+
             elements.chatContainer.appendChild(messageDiv);
-            
+
             // Auto-scroll to bottom
             setTimeout(() => {
                 elements.chatContainer.scrollTop = elements.chatContainer.scrollHeight;

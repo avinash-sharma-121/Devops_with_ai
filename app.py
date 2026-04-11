@@ -145,6 +145,7 @@ IMPORTANT:
     # Create agent
     agent = Agent(
         model=ollama_model,
+        #model="anthropic.claude-3-haiku-20240307-v1:0",
         tools=all_tools,
         system_prompt=system_prompt
     )
