@@ -111,7 +111,7 @@ def initialize_agent():
     
     # Add system tools
     local_tools_list = [
-        about_me, run_shell, get_time, disk_usage, kubectl_get_pods, random_number, read_pdf, generate_pdf
+         run_shell, get_time, disk_usage, kubectl_get_pods, random_number, read_pdf, generate_pdf
     ]
     all_tools.extend(local_tools_list)
     
@@ -126,6 +126,7 @@ def initialize_agent():
 - get_alerts: Get weather alerts
 
 🔧 SYSTEM & LOCAL TOOLS:
+- about_developer: Get info about the developer or about yourself
 - run_shell: Execute shell commands
 - get_time: Get current time
 - disk_usage: Check disk usage
@@ -134,6 +135,7 @@ def initialize_agent():
 - read_pdf, generate_pdf: PDF operations
 - about_me: Get info about the assistant
 - kubectl_get_pods: Get Kubernetes pods info
+- about_developer: Get info about the developer
 
 IMPORTANT:
 - Use custom tools for calculations and data from FastMCP
@@ -144,8 +146,9 @@ IMPORTANT:
     
     # Create agent
     agent = Agent(
-        model=ollama_model,
-        #model="anthropic.claude-3-haiku-20240307-v1:0",
+        #model=ollama_model,
+        #model="anthropic.claude-3-5-sonnet-20240620-v1:0",
+        model="anthropic.claude-3-haiku-20240307-v1:0",
         tools=all_tools,
         system_prompt=system_prompt
     )
